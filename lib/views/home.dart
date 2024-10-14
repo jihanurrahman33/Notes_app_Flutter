@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import 'package:notes/controllers/notes_controller.dart';
 import 'package:notes/routes/route_names.dart';
 import 'package:notes/utils/colors.dart';
 import 'package:notes/widgets/custom_single_note.dart';
+
+RxBool searchfeild = false.obs;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,6 +14,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(NotesController());
+    final TextEditingController searchController = TextEditingController();
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -38,7 +41,12 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            searchfeild.value == false
+                                ? searchfeild.value = true
+                                : searchfeild.value =
+                                    false; // Set searchfeild to true
+                          },
                           icon: const Icon(Icons.search),
                         ),
                         IconButton(
@@ -49,16 +57,36 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                Obx(() {
+                  // Observe searchfeild and show/hide the search field
+                  return searchfeild.value
+                      ?
+                      // Add a search bar
+                      TextField(
+                          controller: searchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Search notes',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            controller.searchNotes(value);
+                          },
+                        )
+                      : const SizedBox(
+                          height: 1,
+                        );
+                }),
                 const SizedBox(
                   height: 20,
                 ),
                 Expanded(
                   child: Obx(() {
                     return SingleChildScrollView(
-                      child: controller.notes.isEmpty
+                      child: controller.filteredNotes.isEmpty
                           ? const Center(
                               child: Text(
-                                'No notes',
+                                'No notes found',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 20,
@@ -68,9 +96,9 @@ class HomeScreen extends StatelessWidget {
                           : ListView.builder(
                               shrinkWrap: true,
                               primary: false,
-                              itemCount: controller.notes.length,
+                              itemCount: controller.filteredNotes.length,
                               itemBuilder: (context, index) {
-                                final note = controller.notes[index];
+                                final note = controller.filteredNotes[index];
                                 final createdDateFormat = DateFormat.yMMMMd()
                                     .format(note.createdDate);
                                 final createTimeFormat =
