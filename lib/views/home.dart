@@ -16,7 +16,16 @@ class HomeScreen extends StatelessWidget {
     final controller = Get.put(NotesController());
     final TextEditingController searchController = TextEditingController();
 
+    // Create a GlobalKey to access the Scaffold
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
     return Scaffold(
+      key: scaffoldKey, // Assign the key to the Scaffold
+      drawer: const Drawer(
+        child: DrawerHeader(
+          child: Text('Notes Drawer Will be implemented soon'),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: Container(
@@ -35,17 +44,17 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // Open the drawer using the Scaffold key
+                        scaffoldKey.currentState?.openDrawer();
+                      },
                       icon: const Icon(Icons.menu),
                     ),
                     Row(
                       children: [
                         IconButton(
                           onPressed: () {
-                            searchfeild.value == false
-                                ? searchfeild.value = true
-                                : searchfeild.value =
-                                    false; // Set searchfeild to true
+                            searchfeild.value = !searchfeild.value;
                           },
                           icon: const Icon(Icons.search),
                         ),
@@ -58,11 +67,8 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 Obx(() {
-                  // Observe searchfeild and show/hide the search field
                   return searchfeild.value
-                      ?
-                      // Add a search bar
-                      TextField(
+                      ? TextField(
                           controller: searchController,
                           decoration: const InputDecoration(
                             labelText: 'Search notes',
@@ -73,13 +79,9 @@ class HomeScreen extends StatelessWidget {
                             controller.searchNotes(value);
                           },
                         )
-                      : const SizedBox(
-                          height: 1,
-                        );
+                      : const SizedBox(height: 1);
                 }),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 Expanded(
                   child: Obx(() {
                     return SingleChildScrollView(
